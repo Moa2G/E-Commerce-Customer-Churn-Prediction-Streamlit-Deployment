@@ -3,11 +3,9 @@ import pandas as pd
 import numpy as np
 import joblib
 
-# Load model and scaler
 model = joblib.load("churn_model.pkl")
 scaler = joblib.load("scaler.pkl")
 
-# Page title
 st.set_page_config(
     page_title="E-Commerce Churn Prediction",
     page_icon="🛒",
@@ -26,7 +24,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Numerical inputs
+tab1, tab2, tab3 = st.tabs(["📊 Prediction", "📈 Model Info", "🗂️ Batch Prediction"])
+
+with open("custom_style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 with st.sidebar:
     st.header("🔧 Customer Features")
     freq = st.number_input("Frequency (# of orders)", min_value=0.0, step=1.0)
@@ -40,11 +42,9 @@ with st.sidebar:
     discount_rate = st.number_input("Discount Amount Rate (%)", min_value=0.0, max_value=100.0, value=0.0)
     engagement = st.number_input("Engagement Rate (%)", min_value=0.0, max_value=100.0, value=0.0)
 
-    # Categorical inputs (one-hot encoded)
     region = st.selectbox("Region", ["Central", "East", "South", "West"])
     segment = st.selectbox("Segment", ["Consumer", "Corporate", "Home Office"])
 
-# Prepare input row
 input_dict = {
     'Frequency': freq,
     'Monetary': monetary,
@@ -65,11 +65,8 @@ input_dict = {
     'Segment_Home Office': 1 if segment == "Home Office" else 0
 }
 
-tab1, tab2 = st.tabs(["📊 Prediction", "📈 Model Info"])
-
 input_df = pd.DataFrame([input_dict])
 
-# Scale numerical features (must match training)
 num_cols = ['Frequency','Monetary','Recency','Tenure','AOV','AvgUnitsPerOrder',
             'ReturnRate','AvgGap','DiscountAmountRate','EngagementRate']
 input_df[num_cols] = scaler.transform(input_df[num_cols])
@@ -84,5 +81,32 @@ if st.button("Predict Churn"):
     else:
         st.success(f"✅ This customer is likely to stay **ACTIVE** (probability: {1-prob:.2f})")
 
-
+with tab3:
+    st.subheader("🗂️ Batch Churn Prediction (CSV Upload)")
+    st.write("Upload a CSV file with customer features to predict churn for multiple customers at once.")
+    example_cols = ['Frequency','Monetary','Recency','Tenure','AOV','AvgUnitsPerOrder','ReturnRate','AvgGap','DiscountAmountRate','EngagementRate',
+                   'Region_Central','Region_East','Region_South','Region_West','Segment_Consumer','Segment_Corporate','Segment_Home Office']
+    uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
+    if uploaded_file:
+        try:
+            batch_df = pd.read_csv(uploaded_file)
+            missing_cols = [col for col in example_cols if col not in batch_df.columns]
+            if missing_cols:
+                st.error(f"Missing columns in uploaded CSV: {missing_cols}")
+            else:
+                batch_preds = model.predict(batch_df)
+                batch_probs = model.predict_proba(batch_df)[:,1]
+                batch_df['Churn_Prediction'] = np.where(batch_preds == 1, 'CHURN', 'ACTIVE')
+                batch_df['Churn_Probability'] = batch_probs
+                st.success(f"Batch prediction complete! Showing results:")
+                st.dataframe(batch_df[[*example_cols, 'Churn_Prediction', 'Churn_Probability']])
+                csv = batch_df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Download Results as CSV",
+                    data=csv,
+                    file_name='batch_churn_predictions.csv',
+                    mime='text/csv',
+                )
+        except Exception as e:
+            st.error(f"Error processing file: {e}")
 

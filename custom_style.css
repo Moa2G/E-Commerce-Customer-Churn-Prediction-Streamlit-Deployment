@@ -1,0 +1,60 @@
+body, .stApp {
+    background: linear-gradient(135deg, #f8fafc 0%, #d6eaff 100%);
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+}
+
+h1, .stHeader, .stSidebar h1, .stSidebar h2, .stSidebar h3 {
+    color: #2E86C1 !important;
+}
+
+.stButton button {
+    background-color: #2E86C1;
+    color: #fff;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-size: 1.1rem;
+    transition: background 0.2s;
+}
+
+.stButton button:hover {
+    background-color: #145A92;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: #eaf3fb;
+    color: #2E86C1;
+    border-radius: 6px 6px 0 0;
+    font-weight: bold;
+}
+
+.stTabs [aria-selected="true"] {
+    background: #2E86C1 !important;
+    color: #fff !important;
+}
+
+.stSidebar {
+    background: #f4faff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(46,134,193,0.04);
+}
+
+.stNumberInput input, .stSelectbox select {
+    border-radius: 6px;
+    border: 1px solid #b7d8f6;
+    font-size: 1rem;
+}
+
+.stAlert {
+    border-radius: 8px;
+    font-size: 1.1rem;
+}
+
+.stSuccess {
+    background: #eafaf1 !important;
+    color: #239b56 !important;
+}
+
+.stError {
+    background: #fdeaea !important;
+    color: #cb4335 !important;
+}
